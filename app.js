@@ -36,6 +36,21 @@ function cardFor(character) {
     img.src = character.image;
     img.alt = character.name;
     img.loading = "lazy"; // only load images as they scroll into view
+    // The wiki generates thumbnails on demand, so the first request for a
+    // portrait can answer 404 while the file is being made. Retry once
+    // after a pause; only if that also fails, swap in the letter block.
+    let tries = 0;
+    img.addEventListener("error", () => {
+      tries += 1;
+      if (tries === 1) {
+        setTimeout(() => { img.src = character.image; }, 1000);
+      } else {
+        const noImage = document.createElement("div");
+        noImage.className = "no-image";
+        noImage.textContent = character.name.charAt(0);
+        img.replaceWith(noImage);
+      }
+    });
     card.appendChild(img);
   } else {
     const noImage = document.createElement("div");
