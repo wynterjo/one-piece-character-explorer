@@ -1,0 +1,44 @@
+/* Baseline styling. Step 8 is the polish pass; this just keeps the page tidy until then. */
+
+body {
+  font-family: system-ui, Arial, sans-serif;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1rem;
+  line-height: 1.5;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Controls sit in one row on wide screens, stacked on narrow ones. */
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.controls input,
+.controls select {
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.controls input {
+  flex: 2;
+  min-width: 200px;
+}
+
+/* Results grid: cards flow into columns; JavaScript fills them in (step 4). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.placeholder {
+  color: #666;
+}

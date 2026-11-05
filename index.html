@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Piece Character Explorer</title>
+  <!-- styles.css holds all the page styling (step 8 polishes it) -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>One Piece Character Explorer</h1>
+    <p>Search and explore One Piece characters, their bounties, crews, and Devil Fruits.</p>
+  </header>
+
+  <!-- Controls: search box + two filters. JavaScript fills the crew list once data loads. -->
+  <section class="controls">
+    <input type="search" id="search" placeholder="Search by name, e.g. Luffy" aria-label="Search characters by name">
+    <select id="crew-filter" aria-label="Filter by crew">
+      <option value="">All crews</option>
+    </select>
+    <select id="status-filter" aria-label="Filter by status">
+      <option value="">All statuses</option>
+      <option value="alive">Alive</option>
+      <option value="deceased">Deceased</option>
+    </select>
+  </section>
+
+  <!-- Results grid: JavaScript adds one card per character here (step 4). -->
+  <main id="results" class="grid">
+    <p class="placeholder">Characters will appear here once the data is ready.</p>
+  </main>
+
+  <!-- Detail view: hidden until a character is clicked (step 7). -->
+  <section id="detail" hidden></section>
+
+  <!-- app.js holds all the behaviour; it grows one step at a time. -->
+  <script src="app.js"></script>
+</body>
+</html>
