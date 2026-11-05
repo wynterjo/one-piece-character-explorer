@@ -33,12 +33,13 @@ function cardFor(character) {
   // Portrait when we have one; otherwise a block with the first letter.
   if (character.image) {
     const img = document.createElement("img");
+    // The wiki answers 404 when the request arrives with a github.io
+    // referer, so ask the browser not to send one for these images.
+    // Set before src so the policy applies to the first request.
+    img.referrerPolicy = "no-referrer";
     img.src = character.image;
     img.alt = character.name;
     img.loading = "lazy"; // only load images as they scroll into view
-    // The wiki answers 404 when the request arrives with a github.io
-    // referer, so ask the browser not to send one for these images.
-    img.referrerPolicy = "no-referrer";
     // The wiki generates thumbnails on demand, so the first request for a
     // portrait can answer 404 while the file is being made. Retry once
     // after a pause; only if that also fails, swap in the letter block.
