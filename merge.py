@@ -26,9 +26,13 @@ or a Devil Fruit is kept even without a portrait.
 Output: characters.json — one record per character:
   {name, image, status, bounty, crew, job, devil_fruit}
 
-Matching across APIs is by normalised name (lowercase, letters/digits only),
-because the APIs use different ids. Status is normalised to alive/deceased/
-unknown so the page filters work the same for every source.
+Matching across APIs is by a canonical key (see match_key), because the
+APIs use different ids and different languages for the same character:
+api-onepiece.com uses French names, sometimes with an alias after '/'
+('Edward Newgate / Barbe Blanche', 'Baggy / Le Clown'), while
+onepieceapi.com uses English names ('Edward Newgate', 'Buggy'). Without
+the canonical key, one character would appear twice. Status is normalised
+to alive/deceased/unknown so the page filters work the same for every source.
 """
 
 import json
@@ -54,6 +58,7 @@ ALIASES = {
     "Haguar D. Sauro": "Jaguar D. Saul",
     "Im Sama": "Imu",
     "Imu Neronna": "Imu",
+    "Nerona Imu": "Imu",
     "Kobby": "Koby",
     "Carotte": "Carrot",
     "Zunesh": "Zunesha",
@@ -103,6 +108,27 @@ def fetch_json(url, params=None):
 def norm_name(name):
     """Lowercase, keep letters/digits only: 'Monkey D. Luffy' -> 'monkeydluffy'."""
     return re.sub(r"[^a-z0-9]", "", (name or "").lower())
+
+
+def match_key(name):
+    """Canonical key for matching the same character across sources.
+
+    Translate French names to English via ALIASES, then take the name
+    before any '/': 'Baggy / Le Clown' -> 'Buggy' -> 'buggy', and
+    'Edward Newgate / Barbe Blanche' -> 'edwardnewgate', the same key
+    onepieceapi.com's 'Edward Newgate' produces.
+    """
+    translated = ALIASES.get(name, name)
+    return norm_name(translated.split("/")[0].strip())
+
+
+def fill_missing(target, source):
+    """Copy fields from source into target where target has nothing."""
+    for field in ("bounty", "crew", "job", "devil_fruit", "image"):
+        if not target.get(field) and source.get(field):
+            target[field] = source[field]
+    if target.get("status") == "unknown" and source.get("status"):
+        target["status"] = source["status"]
 
 
 def norm_status(raw):
@@ -246,11 +272,11 @@ def main():
     wiki_images = fetch_fandom_images(all_names)
     print(f"One Piece Wiki: portraits found for {len(wiki_images)} names")
 
-    # --- Index source 2 by normalised name ---
+    # --- Index source 2 by canonical key ---
     op_by_name = {}
     for c in op:
         name = (c.get("name") or {}).get("en") or ""
-        key = norm_name(name)
+        key = match_key(name)
         if key and key not in op_by_name:
             op_by_name[key] = c
 
@@ -259,7 +285,7 @@ def main():
     matched = 0
     for c in ap:
         name = c.get("name") or ""
-        key = norm_name(name)
+        key = match_key(name)
         if not key:
             continue
         crew = c.get("crew") or {}
@@ -288,7 +314,12 @@ def main():
             rec["image"] = wiki_images[key]
         elif other and key not in REMOVED_IMAGES:
             rec["image"] = other.get("image_url") or None
-        merged[key] = rec
+        if key in merged:
+            # Two source rows for the same character ('Im Sama' and
+            # 'Imu Neronna'): keep the first name, fill any gaps.
+            fill_missing(merged[key], rec)
+        else:
+            merged[key] = rec
 
     # --- Add characters found only in source 2 ---
     only_op = 0
@@ -313,7 +344,7 @@ def main():
 
     # --- Pass 2: aliases, then wiki search, for portraits the direct lookup missed ---
     # 2a. Known French -> English name aliases (api-onepiece.com uses French names).
-    alias_by_key = {norm_name(k): v for k, v in ALIASES.items()}
+    alias_by_key = {match_key(k): v for k, v in ALIASES.items()}
     alias_titles = {key: alias_by_key[key] for key in merged
                     if not merged[key]["image"] and key in alias_by_key}
     alias_images = fetch_fandom_images(list(alias_titles.values()))
