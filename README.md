@@ -10,7 +10,7 @@ Character data is merged from three free public sources, keeping only the import
 - **Bounty, crew, job, Devil Fruit** — from [api-onepiece.com](https://api.api-onepiece.com)
 - **Affiliation, bounties, extra characters** — from [onepieceapi.com](https://onepieceapi.com)
 
-The merged data lives in `characters.json`, so the page works without live API calls. Run `merge.py` to refresh it.
+The merged data lives in `characters.json`, so the page works without live API calls. Run `merge.py` to refresh it. Characters left with no portrait, no bounty and no Devil Fruit are left out — they're minor names with nothing to show.
 
 ## Stack
 
